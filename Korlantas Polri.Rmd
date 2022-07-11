@@ -1,0 +1,205 @@
+---
+title: "Korlantas Polri R Basic"
+author: "Team Algoritma"
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: 
+        collapsed: false
+    number_sections: true
+    code_folding: hide
+    theme: flatly
+    highlight: zenburn
+    df_print: paged
+  fig_caption: yes
+  pdf_document:
+    latex_engine: xelatex
+    fig_caption: yes
+---
+
+```{r setup,echo=FALSE}
+# clear-up the environment
+rm(list = ls())
+
+# chunk options
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>"
+)
+
+# scientific notation
+options(scipen = 9999)
+```
+
+Pada *hands on* ini kita akan menggunakan sebuah data tentang tingkat kriminalitas di US pada tahun 1960 yang diambil dari [kaggle.com](https://www.kaggle.com/datasets/shilpagopal/us-crime-dataset). Setiap observasi pada data ini merupakan data per negara bagian tingkat kriminalitas dan faktor-faktor yang diperkirakan berpengaruh. Menggunakan data tersebut, kita akan melakukan eksplorasi serta visualisasi dasar menggunakan bahasa pemrograman R.
+
+# _Import data_
+
+Terdapat beragam file yang bisa dibaca di R. Contohnya untuk membaca file csv adalah sebagai berikut:
+
+```{r}
+# membaca data dari folder data_input bernama crime.csv lalu dimasukkan ke dalam object crime
+crime <- read.csv("data_input/crime.csv")
+
+# membuang 1 buah kolom bernama X
+crime <- subset(crime, select = -X)
+
+# melakukan inspeksi data
+head(crime)
+```
+
+Untuk memudahkan kita dalam melakukan interpretasi data, maka judul dari setiap kolom di atas akan diubah namanya. Berikut ini adalah proses yang dibutuhkan.
+
+```{r}
+# mengganti judul setiap kolom agar lebih mudah diinterpretasikan
+names(crime) <- c("percent_m", "is_south", "mean_education", "police_exp60", 
+                  "police_exp59", "labour_participation", "m_per1000f", 
+                  "state_pop", "nonwhites_per1000", "unemploy_m24", "unemploy_m39", 
+                  "gdp", "inequality", "prob_prison", "time_prison", "crime_rate")
+head(crime)
+```
+
+Glosarium data `crime` :
+
+- `percent_m`: persentase laki-laki berumur 14-24
+- `is_south`: kategorikal lokasi, apakah di negara bagian daerah selatan. 1 = Yes, 0 = No.
+- `mean_education`: rata-rata tahun sekolah  
+- `police_exp60`: pengeluaran polisi tahun 1960  
+- `police_exp59`: pengeluaran polisi tahun 1959
+- `labour_participation`: tingkat partisipasi angkatan kerja  
+- `m_per1000f`: jumlah laki-laki per 1000 perempuan  
+- `state_pop`: populasi negara bagian
+- `nonwhites_per1000`: jumlah penduduk non kulit putih per 1000 orang
+- `unemploy_m24`: tingkat pengangguran laki-laki di perkotaan dengan umur 14-24
+- `unemploy_m39`: tingkat pengangguran laki-laki di perkotaan dengan umur 35-39
+- `gdp`: produk domestik bruto (gdp) per jumlah kepala
+- `inequality`: ketimpangan pendapatan
+- `prob_prison`: probability of imprisonment  
+- `time_prison`: rata-rata waktu menjalani hukuman penjara  
+- `crime_rate`: tingkat kriminalitas
+
+Sebelum mengolah data, kita perlu tau tentang data kita. Fungsi yang umum digunakan untuk melihat struktur dan rangkuman data adalah `str()` dan `summary()`
+
+Melihat struktur data
+```{r}
+
+```
+
+Melihat rangkuman deskriptif data
+```{r}
+
+```
+
+# _Data Wrangling_
+
+Data wrangling adalah tahap pengolahan data yang bertujuan untuk mendapatkan insight sesuai yang diinginkan. Selain itu pada tahapan ini juga kita dapat gunakan untuk mempersiapkan dan membentuk data kita sesuai yang dibutuhkan. 
+
+Mengubah tipe data
+Pada data crime terdapat satu buah kolom dengan tipe data yang kurang sesuai, yaitu `is_south`. Jika kita lihat data pada kolom `is_south` ini hanya terdapat 2 buah nilai yaitu 0 dan 1. Oleh karena itu tipe data yang tepat adalah factor (kategorikal).
+
+```{r}
+# mengubah tipe data kolom is_south menjadi factor
+
+
+# cek tipe data
+
+```
+
+Proses di bawah ini dilakukan untuk memisahkan data negara bagian ke-47 yang akan digunakan untuk melakukan contoh prediksi machine learning, tidak ada maksud lain.
+
+```{r}
+# memisahkan 1 baris
+crime_test <- crime[47,]
+crime <- crime[-47,]
+```
+
+Selain proses pengubahan tipe data, proses yang umum dilakukan yaitu mencari apakah ada data yang kosong dan menentukan akan diapakan data kosong tersebut jika memang ada.
+
+# _Explolatory Data Analysis (EDA)_
+
+Explolatory Data Analysis adalah tahapan eksplorasi data untuk mendapatkan pola-pola tertentu dan membantu kita memahami data sebelum melakukan analisa lanjutan seperti membuat model machine learning. Salah satu kegiatan dalam EDA adalah pembuatan visualisasi dari data. Contoh pertanyaan bisnis yang dapat diangkat berdasarkan inspeksi awal yang telah dilakukan yaitu:
+
+1. **Jika diperhatikan, adakah kolom numerik yang memiliki persebaran data yang menarik untuk ditinjau lebih lanjut?**
+2. **Kira-kira apakah setiap kolom/variabel pada data kita punya pengaruh untuk menentukan tingkat kriminalitas?**
+
+Mari kita jawab pertanyaan bisnis pertama, yaitu **kolom dengan persebaran data yang menarik untuk ditinjau**.
+Jika melihat hasil rangkuman deskriptif data pada proses sebelumnya, terdapat 1 kolom dengan data yang memiliki nilai maksimal cukup jauh dari nilai data di Q3 yaitu kolom `state_pop`. Oleh karena itu akan dilihat persebaran datanya dengan plot `histogram`.
+
+```{r}
+
+```
+
+Dari visualisasi histogram di atas terlihat ada data yang cukup terpisah dari kumpulan datanya dan bisa diindikasikan sebagai data pencilan. Tetapi untuk mengetahui lebih lanjut, kita dapat menggunakan fungsi visualisasi bentuk lainnya yaitu `boxplot`.
+
+```{r}
+
+```
+
+## Visualisasi di R menggunakan `ggplot2`
+
+Base plot yang kita lakukan sebelumnya amat berguna untuk melakukan eksplorasi data di awal dimana codingannya cukup sederhana. Ia dapat menyampaikan informasi mengenai data (distribusi/pola data) dan hubungan antar data secara cepat.
+
+Namun untuk membuat plot yang cantik, kita biasanya harus menggunakan package lain yang menyediakan fitur-fitur visualisasi yang sangat custom seperti `ggplot2`. Grammar of Graphics atau `ggplot2` adalah salah satu package visualisasi di R yang sagat powerfull dan mempunyai banyak fitur dan ekstensi. Kita akan belajar visualisasi menggunakan `ggplot2` dengan detail di DV specialization. Berikut pembuatan ulang plot diatas menggunakan `ggplot2`. 
+
+Untuk menjawab pertanyaan kedua, yaitu **melihat pengaruh tiap variabel terhadap tingkat kriminalitas** kita akan menggunakan plot `heatmap`. Pada plot heatmap ini kita dapat melihat hubungan atau korelasi antar variabel pada data crime dengan terlebih dahulu menghitung nilai korelasinya.
+
+```{r}
+library(reshape2)
+library(ggplot2)
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+# prepare data for plot
+crime_corr <- round(cor(crime[,-2]),2)
+lower_tri <- get_lower_tri(crime_corr)
+melt_crime <- melt(lower_tri, na.rm = T)
+
+# plot and settings
+ggplot(data = melt_crime, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))
+```
+
+# Membuat model machine learning
+
+Proses yang umumnya dilakukan setelah melakukan eksplorasi data yaitu membuat model machine learning. Penentuan jenis model yang akan dibuat tergantung dari tipe data yang ingin diprediksi. Jika target variabel atau data yang ingin diprediksi bersifat kategorikal maka model yang dibuat adalah klasifikasi. Sebaliknya jika tipenya numerikal maka model yang dibuat adalah regresi. Pada data `crime` ini, kita ingin melakukan prediksi tingkat kriminalitas/tingkat kejahatan yang dimuat pada kolom `crime_rate`. Jika kita lihat, tipe data pada kolom ini adalah data numerikal sehingga model yang akan kita buat adalah model `regresi`.
+
+Pada pembuatan model machine learning, data yang kita miliki dikelompokkan menjadi 2 jenis variabel yaitu variabel yang akan diprediksi (target variable) dan variabel yang mempengaruhi target variable (predictor). Di kasus ini, kita akan melakukan prediksi `crime_rate` menggunakan seluruh variabel lain sebagai predictor-nya. Untuk membuat model ini kita akan menggunakan fungsi `lm()`.
+
+```{r}
+# membuat model machine learning
+
+
+# melihat kesimpulan model
+
+```
+
+## Melakukan prediksi berdasarkan model
+
+Berdasarkan model yang sudah dibuat di atas, kita akan melakukan prediksi menggunakan satu buah data (`crime_test`). Dari sini kita akan melihat nilai `crime_rate` yang dihasilkan oleh model kita berdasarkan data tersebut. Untuk memprediksi digunakan fungsi `predict()`.
+
+```{r}
+# prediksi negara bagian ke-47
+
+```
+
+Berikut ini adalah nilai asli dari `crime_rate` pada data `crime_test`. 
+
+```{r}
+
+```
+
+Jika dibandingkan dengan nilai aslinya memang akan terdapat perbedaan yang nantinya akan dihitung untuk memperbaiki model yang dibuat.
